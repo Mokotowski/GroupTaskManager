@@ -1,0 +1,95 @@
+﻿@section Styles {
+    <link rel="stylesheet" href="~/css/register.css" />
+}
+﻿
+
+<div class="main">
+
+    <div id="register">
+        <div id="normalregister">
+            <form id="normalregisterform" method="post" asp-action="Register" asp-controller="Account" onsubmit="return validateForm()">
+
+                <label for="FirstName">First Name:</label>
+                <input type="text" name="FirstName" maxlength="50" required placeholder="Enter First Name" />
+                <small id="firstNameError" style="color: red; display: none;">Please enter a valid first name.</small>
+
+                <label for="LastName">Last Name:</label>
+                <input type="text" name="LastName" maxlength="50" required placeholder="Enter Last Name" />
+                <small id="lastNameError" style="color: red; display: none;">Please enter a valid last name.</small>
+
+                <label for="PhoneNumber">Phone Number:</label>
+                <input type="text" name="PhoneNumber" maxlength="15" pattern="^\d{9,15}$" required placeholder="Enter Phone Number" />
+                <small id="phoneNumberError" style="color: red; display: none;">Please enter a valid phone number.</small>
+
+                <label for="Email">Email:</label>
+                <input type="email" name="Email" required placeholder="Enter Email" />
+                <small id="emailError" style="color: red; display: none;">Please enter a valid email address.</small>
+
+                <label for="Password">Password:</label>
+                <input type="password" name="Password" id="Password" required minlength="8" placeholder="Enter Password" />
+                <small id="passwordError" style="color: red; display: none;">Password must be at least 8 characters long.</small>
+
+                <label for="RepeatPassword">Confirm Password:</label>
+                <input type="password" name="RepeatPassword" id="RepeatPassword" required placeholder="Confirm Password" />
+                <small id="repeatPasswordError" style="color: red; display: none;">Passwords do not match.</small>
+
+                <label for="AcceptRules">
+                    <input type="checkbox" name="AcceptRules" id="AcceptRules" required />
+                    I accept the terms and conditions
+                </label>
+                <small id="acceptRulesError" style="color: red; display: none;">You must accept the terms and conditions.</small>
+
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function validateForm() {
+            var email = document.forms["normalregisterform"]["Email"].value;
+            var password = document.forms["normalregisterform"]["Password"].value;
+            var repeatPassword = document.forms["normalregisterform"]["RepeatPassword"].value;
+            var acceptRules = document.forms["normalregisterform"]["AcceptRules"].checked;
+
+            var emailError = document.getElementById("emailError");
+            var passwordError = document.getElementById("passwordError");
+            var repeatPasswordError = document.getElementById("repeatPasswordError");
+            var acceptRulesError = document.getElementById("acceptRulesError");
+
+            var valid = true;
+
+            if (!email) {
+                emailError.style.display = 'block';
+                valid = false;
+            } else {
+                emailError.style.display = 'none';
+            }
+
+            if (password.length < 8) {
+                passwordError.style.display = 'block';
+                valid = false;
+            } else {
+                passwordError.style.display = 'none';
+            }
+
+            if (password !== repeatPassword) {
+                repeatPasswordError.style.display = 'block';
+                valid = false;
+            } else {
+                repeatPasswordError.style.display = 'none';
+            }
+
+            if (!acceptRules) {
+                acceptRulesError.style.display = 'block';
+                valid = false;
+            } else {
+                acceptRulesError.style.display = 'none';
+            }
+
+            return valid;
+        }
+    </script>
+}

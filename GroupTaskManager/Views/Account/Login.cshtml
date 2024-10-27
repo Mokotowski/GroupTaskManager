@@ -1,0 +1,54 @@
+﻿@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" />
+}
+<div class="main">
+
+    <div id="login">
+        <div id="normallogin">
+            <form id="normalloginform" method="post" asp-action="Login" asp-controller="Account" onsubmit="return validateForm()">
+
+                <label for="Email">Email:</label>
+                <input type="email"
+                       name="Email"
+                       id="Email"
+                       required
+                       placeholder="Enter your email" />
+                <small id="emailError" style="color: red; display: none;">Please enter a valid email address.</small>
+
+                <label for="Password">Password:</label>
+                <input type="password" name="Password" id="Password" required minlength="8" placeholder="Enter your password" />
+                <small id="passwordError" style="color: red; display: none;">Password must be at least 8 characters.</small>
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function validateForm() {
+        const emailInput = document.getElementById('Email');
+        const passwordInput = document.getElementById('Password');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+
+        let isValid = true;
+
+        if (!emailInput.checkValidity()) {
+            emailError.style.display = 'inline';
+            isValid = false;
+        } else {
+            emailError.style.display = 'none';
+        }
+
+        if (passwordInput.value.length < 8) {
+            passwordError.style.display = 'inline';
+            isValid = false;
+        } else {
+            passwordError.style.display = 'none';
+        }
+
+        return isValid;
+    }
+</script>

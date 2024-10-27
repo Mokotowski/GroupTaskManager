@@ -1,0 +1,28 @@
+﻿@{
+    string errorInfo = ViewBag.ErrorInfo as string;
+    string errorMessage = "An error occurred. Please try again.";
+
+    if (errorInfo == "Register")
+    {
+        errorMessage = "Registration failed. Please verify your details and try again.";
+    }
+    else if (errorInfo == "Login")
+    {
+        errorMessage = "Login failed. Please check your email and password and try again.";
+    }
+    else if (errorInfo == "Logout")
+    {
+        errorMessage = "Logout failed. Please try again later.";
+    }
+}
+
+
+<div class="main">
+
+    <div class="error-container">
+        <h1>Error</h1>
+        <p>@errorMessage</p>
+        <a href="@Url.Action("Index", "Home")" style="color: lightblue; text-decoration: none;">Return to Home</a>
+    </div>
+
+</<div>

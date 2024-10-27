@@ -1,0 +1,70 @@
+﻿#login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+#normallogin {
+    background-color: rgb(45, 48, 50);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 100%;
+}
+
+#normallogin label {
+    display: block;
+    font-size: 14px;
+    color: white;
+    margin-bottom: 5px;
+}
+
+#normallogin input[type="email"],
+#normallogin input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    background-color: rgb(60, 63, 65);
+    color: white;
+    border: 1px solid rgb(75, 78, 80);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+#normallogin input[type="email"]:focus,
+#normallogin input[type="password"]:focus {
+    outline: none;
+    border-color: rgb(100, 150, 250);
+    background-color: rgb(50, 53, 55);
+}
+
+#normallogin small {
+    display: block;
+    font-size: 12px;
+    color: red;
+    margin-top: -8px;
+    margin-bottom: 8px;
+}
+
+#normallogin button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: rgb(0, 122, 204);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#normallogin button[type="submit"]:hover {
+    background-color: rgb(0, 102, 184);
+}
+
+#normallogin button[type="submit"]:focus {
+    outline: none;
+    background-color: rgb(0, 92, 174);
+}

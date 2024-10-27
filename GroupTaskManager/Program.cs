@@ -1,4 +1,6 @@
 using GroupTaskManager.GroupTaskManager.Database;
+using GroupTaskManager.GroupTaskManager.Services;
+using GroupTaskManager.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +40,12 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 
 }).AddEntityFrameworkStores<DatabaseContext>()
   .AddDefaultTokenProviders();
+
+
+builder.Services.AddScoped<IRegister, AuthenticationServices>();
+builder.Services.AddScoped<ILoginLogout, AuthenticationServices>();
+
+
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();

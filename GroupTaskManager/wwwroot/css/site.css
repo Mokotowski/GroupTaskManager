@@ -1,22 +1,75 @@
-html {
-  font-size: 14px;
+body.dark-theme {
+    background-color: rgb(32, 35, 36);
+    color: #ffffff;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+header, .navbar, .dropdown-menu, .footer {
+    background-color: rgb(24, 27, 28);
+    background: linear-gradient(to bottom, rgb(30, 33, 34), rgb(24, 27, 28));
+    border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+    border-top: 1px solid rgba(0, 0, 0, 0.6);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+
+    .navbar .navbar-brand, .navbar .nav-link {
+        color: #ffffff !important;
+        font-size: 1.1rem;
+    }
+
+    .navbar .nav-link {
+        padding: 10px 15px;
+    }
+
+    .navbar .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+.dropdown-menu {
+    margin-left: -95px;
+    background-color: rgb(45, 49, 50);
+    border: none;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+.dropdown-item {
+    color: #dcdcdc;
+    padding: 10px 20px;
+    font-size: 0.95rem;
 }
 
-body {
-  margin-bottom: 60px;
+    .dropdown-item:hover {
+        background-color: rgb(32, 35, 36);
+        color: #ffffff;
+    }
+
+
+.main {
+
+    height: 89vh;
+
 }
+
+#hello {
+    max-width: 1200px;
+    text-align: center;
+    margin: 0 auto; 
+    padding: 20px; 
+}
+
+
+
+.footer {
+    padding: 15px 0;
+    color: #dcdcdc;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+    .footer a {
+        color: #dcdcdc;
+    }
+
+        .footer a:hover {
+            color: #ffffff;
+            text-decoration: none;
+        }
