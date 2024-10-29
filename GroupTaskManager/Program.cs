@@ -1,5 +1,6 @@
 using GroupTaskManager.GroupTaskManager.Database;
 using GroupTaskManager.GroupTaskManager.Services;
+using GroupTaskManager.GroupTaskManager.Services.Interface;
 using GroupTaskManager.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,10 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
 
 builder.Services.AddScoped<IRegister, AuthenticationServices>();
 builder.Services.AddScoped<ILoginLogout, AuthenticationServices>();
+
+builder.Services.AddScoped<IFunctionsFromEmail, EmailActionsServies>();
+builder.Services.AddScoped<ISendEmail, EmailActionsServies>();
+
 
 
 

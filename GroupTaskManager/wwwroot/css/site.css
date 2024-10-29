@@ -44,9 +44,10 @@ header, .navbar, .dropdown-menu, .footer {
 
 
 .main {
-
     height: 89vh;
-
+    text-align: center;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 #hello {
@@ -73,3 +74,51 @@ header, .navbar, .dropdown-menu, .footer {
             color: #ffffff;
             text-decoration: none;
         }
+
+
+input[type="hidden"] {
+    display: none; /* Ukryj pola ukryte */
+}
+
+button {
+    background-color: rgb(60, 130, 220);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+    button:hover {
+        background-color: rgb(50, 100, 200);
+    }
+
+
+
+a {
+    color: rgb(60, 130, 220);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+    a:hover {
+        color: rgb(255, 255, 255);
+        background-color: rgb(60, 130, 220);
+    }
+
+    a:active {
+        color: rgb(255, 255, 255);
+        background-color: rgb(40, 100, 180);
+    }
+
+    a:focus {
+        outline: 2px solid rgb(60, 130, 220);
+        outline-offset: 2px;
+    }
+

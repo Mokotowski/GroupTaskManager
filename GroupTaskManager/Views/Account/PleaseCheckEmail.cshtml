@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = "Registration Confirmation";
+}
+
+<div class="main">
+    <h2>Registration Confirmation</h2>
+
+    <p>Thank you for registering!</p>
+    <p>
+        To complete the registration process, please check your email inbox and click the confirmation link
+        we sent to your email address: <strong>@(ViewBag.Email)</strong>.
+    </p>
+
+    <p>
+        If you did not receive the email, please check your spam folder or
+        <form id="resendemail" method="get" asp-action="ResendConfirmationEmail" asp-controller="Account">
+            <input type="hidden" name="Email" value="@(ViewBag.Email)" />
+            <button type="submit">resend the message</button>
+        </form>
+    </p>
+
+</div>
+

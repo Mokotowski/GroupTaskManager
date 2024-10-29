@@ -1,6 +1,12 @@
 ﻿@section Styles {
     <link rel="stylesheet" href="~/css/login.css" />
 }
+
+@{
+    ViewBag.Title = "Login";
+}
+
+
 <div class="main">
 
     <div id="login">
@@ -19,9 +25,13 @@
                 <input type="password" name="Password" id="Password" required minlength="8" placeholder="Enter your password" />
                 <small id="passwordError" style="color: red; display: none;">Password must be at least 8 characters.</small>
 
+                <a href="@Url.Action("ForgotPassword","Account")" style="color: lightblue; text-decoration: none;">Forgot Password</a>
+
+
                 <button type="submit">Login</button>
             </form>
         </div>
+
     </div>
 
 </div>

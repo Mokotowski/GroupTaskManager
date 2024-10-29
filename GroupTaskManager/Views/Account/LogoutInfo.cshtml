@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Logout";
+}
+
+
+
+<div class="main">
+    <h2>Successfully Logged Out</h2>
+    <p>Your account has been successfully logged out. Thank you for using our application!</p>
+
+    <div style="margin-top: 20px;">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Return to Home Page</a>
+        <a href="@Url.Action("Login", "Account")" class="btn btn-secondary">Log In Again</a>
+    </div>
+</div>

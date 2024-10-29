@@ -2,6 +2,8 @@
     string errorInfo = ViewBag.ErrorInfo as string;
     string errorMessage = "An error occurred. Please try again.";
 
+    ViewBag.Title = "Error authentication";
+
     if (errorInfo == "Register")
     {
         errorMessage = "Registration failed. Please verify your details and try again.";
@@ -26,3 +28,6 @@
     </div>
 
 </<div>
+
+
+

@@ -1,5 +1,8 @@
-﻿using GroupTaskManager.Models;
+﻿using GroupTaskManager.GroupTaskManager.Database;
+using GroupTaskManager.GroupTaskManager.Services.Interface;
+using GroupTaskManager.Models;
 using GroupTaskManager.Services.Interface;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -8,15 +11,20 @@ namespace GroupTaskManager.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ILogger<AccountController> _logger;
         private readonly IRegister _register;
-        private readonly ILoginLogout _loginLogout;
-
-        public AccountController(ILogger<AccountController> logger, IRegister register, ILoginLogout loginLogout)
+        private readonly ILoginLogout _loginlogout;
+        private readonly ISendEmail _sendEmail;
+        private readonly IFunctionsFromEmail _functionsEmail;
+        private readonly UserManager<UserModel> _userManager;
+        private readonly SignInManager<UserModel> _signInManager;
+        public AccountController(IRegister register, ILoginLogout loginlogout, ISendEmail sendEmail, IFunctionsFromEmail functionsEmail, UserManager<UserModel> userManager, SignInManager<UserModel> signInManager)
         {
-            _logger = logger;
             _register = register;
-            _loginLogout = loginLogout;
+            _loginlogout = loginlogout;
+            _sendEmail = sendEmail;
+            _functionsEmail = functionsEmail;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpGet]
@@ -37,7 +45,8 @@ namespace GroupTaskManager.Controllers
         {
             if (await _register.Register(Firstname, Lastname, PhoneNumber, Email, Password))
             {
-                return RedirectToAction("Index", "Home");
+                await _sendEmail.SendConfirmedEmail(Email);
+                return RedirectToAction("PleaseCheckEmail", new { Email = Email });
             }
             else
             {
@@ -49,9 +58,9 @@ namespace GroupTaskManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string Email, string Password)
         {
-            if (await _loginLogout.Login(Email, Password))
+            if (await _loginlogout.Login(Email, Password))
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("SuccessfulLogin");
             }
             else
             {
@@ -62,9 +71,9 @@ namespace GroupTaskManager.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            if(await _loginLogout.Logout())
+            if(await _loginlogout.Logout())
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("LogoutInfo"); 
             }
             else
             {
@@ -72,15 +81,36 @@ namespace GroupTaskManager.Controllers
             }
         }
 
-
-
-
-
         [HttpGet]
         public IActionResult LogoutInfo()
         {
             return View();
         }
+
+
+
+
+        [HttpGet]
+        public IActionResult ResetPassword(string code, string Email)
+        {
+            ViewBag.Email = Email;
+            ViewBag.Code = code;
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string code, string Email, string Password)
+        {
+            await _functionsEmail.ResetPassword(code, Email, Password);
+            return RedirectToAction("Login");
+        }
+
+
+
+
+
+
+
+
 
         [HttpGet]
         public IActionResult ErrorAction(string errorinfo)
@@ -89,5 +119,64 @@ namespace GroupTaskManager.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult SuccessfulLogin()
+        {
+            return View();
+        }
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string Email)
+        {
+            await _sendEmail.SendResetPasswordEmail(Email);
+            return RedirectToAction("ForgotPasswordInform", new { Email = Email });
+
+        }
+        [HttpGet]
+        public IActionResult ForgotPasswordInform(string Email)
+        {
+            ViewBag.Email = Email;
+            return View();
+        }
+
+
+
+
+        [HttpGet]
+        public IActionResult PleaseCheckEmail(string Email)
+        {
+            ViewBag.Email = Email;
+            return View();
+        }
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string code, string Email)
+        {
+            ViewBag.Code = code;
+            ViewBag.Email = Email;
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ConfirmedEmail(string code, string Email)
+        {
+            await _functionsEmail.ConfirmedEmail(code, Email);
+            return RedirectToAction("ConfirmedEmail");
+        }
+        [HttpGet]
+        public async Task<IActionResult> ConfirmedEmail()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResendConfirmationEmail(string Email)
+        {
+            await _sendEmail.SendConfirmedEmail(Email);
+            ViewBag.Email = Email;
+            return View();
+        }
     }
 }
