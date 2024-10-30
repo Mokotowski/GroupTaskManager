@@ -49,6 +49,8 @@ builder.Services.AddScoped<ILoginLogout, AuthenticationServices>();
 builder.Services.AddScoped<IFunctionsFromEmail, EmailActionsServies>();
 builder.Services.AddScoped<ISendEmail, EmailActionsServies>();
 
+builder.Services.AddScoped<IGroupManage, GroupServices>();
+builder.Services.AddScoped<IGroupCheck, GroupServices>();
 
 
 

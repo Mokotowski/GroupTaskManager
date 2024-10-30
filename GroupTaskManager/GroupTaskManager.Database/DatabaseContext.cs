@@ -8,11 +8,11 @@ namespace GroupTaskManager.GroupTaskManager.Database
     {
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
 
-        DbSet<UserModel> UserModel {  get; set; }
-        DbSet<Group> Group { get; set; }
-        DbSet<Group_User> Group_User { get; set; }
-        DbSet<TaskRecord> TaskRecord { get; set; }
-        DbSet<TaskAnswer> TaskAnswer { get; set; }
+        public DbSet<UserModel> UserModel {  get; set; }
+        public DbSet<Group> Group { get; set; }
+        public DbSet<Group_User> Group_User { get; set; }
+        public DbSet<TaskRecord> TaskRecord { get; set; }
+        public DbSet<TaskAnswer> TaskAnswer { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -7,6 +7,9 @@ namespace GroupTaskManager.GroupTaskManager.Database
         [Key]
         public int Id { get; set; }
         public string Id_User { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+
 
         public UserModel User { get; set; }
         public List<Group_User> Group_User { get; set; }
