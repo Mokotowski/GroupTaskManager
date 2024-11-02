@@ -1,0 +1,66 @@
+﻿@model List<GroupTaskManager.GroupTaskManager.Models.UserFindResult>
+
+@{
+    ViewData["Title"] = "Group users";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/groupusers.css" />
+}
+
+<div class="main">
+
+    <div id="search-users">
+        <h2>Find user</h2>
+
+        <form id="search-users-form" method="get" asp-action="ResultUsers" asp-controller="Group">
+            <input type="hidden" name="Id_Group" value="@ViewBag.Id_Group" />
+
+            <div class="form-group">
+                <label for="Phrase">Search Phrase</label>
+                <input type="text" name="Phrase" id="Phrase" class="form-control" placeholder="Enter search phrase" />
+            </div>
+
+            <div class="form-group">
+                <label for="type">Search By</label>
+                <select name="type" id="type" class="form-control">
+                    <option value="email">Email</option>
+                    <option value="firstname">First Name</option>
+                    <option value="lastname">Last Name</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <div id="group-users">
+        <h2> Users in my group</h2>
+
+        @if (Model.Count > 0)
+        {
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="user-item">
+                    <p> @(i + 1). @Model[i].Firstname @Model[i].Lastname - @Model[i].Email </p>
+
+
+                    <form id="show-group-form" method="post" asp-action="DeleteUser" asp-controller="Group">
+                        <input type="hidden" name="Id_Group" value="@ViewBag.Id_Group" />
+                        <input type="hidden" name="Id" value="@Model[i].Id_Group_User" />
+
+
+                        <button type="submit" class="btn btn-danger">Remove user</button>
+                    </form>
+                </div>
+            }
+        }
+        else
+        {
+        <p>No users available.</p>
+        }
+
+    </div>
+
+
+</div>

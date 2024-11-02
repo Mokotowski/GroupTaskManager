@@ -2,6 +2,8 @@
 using GroupTaskManager.GroupTaskManager.Services.Interface;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using GroupTaskManager.GroupTaskManager.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GroupTaskManager.GroupTaskManager.Services
 {
@@ -176,7 +178,7 @@ namespace GroupTaskManager.GroupTaskManager.Services
             }
         }
 
-        public async Task<List<Group_User>> GetGroupUsers(UserModel user, int Id_Group)
+        public async Task<List<UserFindResult>> GetGroupUsers(UserModel user, int Id_Group)
         {
             try
             {
@@ -184,16 +186,35 @@ namespace GroupTaskManager.GroupTaskManager.Services
                 if (group == null)
                 {
                     _logger.LogWarning($"Group ID {Id_Group} not found.");
-                    return new List<Group_User>();
+                    return new List<UserFindResult>();
                 }
 
                 if (group.Id_User != user.Id)
                 {
                     _logger.LogWarning($"User ID {user.Id} unauthorized to view users in Group ID {Id_Group}.");
-                    return new List<Group_User>();
+                    return new List<UserFindResult>();
                 }
 
-                var users = await _databaseContext.Group_User.Where(p => p.Id_Group == Id_Group).ToListAsync();
+
+
+                var users = await _databaseContext.Group_User
+                    .Where(p => p.Id_Group == Id_Group)
+                    .Join(
+                        _databaseContext.Users,
+                        groupUser => groupUser.Id_User, 
+                        user => user.Id,               
+                        (groupUser, user) => new UserFindResult 
+                        {
+                            Id_Group_User = groupUser.Id,
+                            Firstname = user.Firstname,
+                            Lastname = user.Lastname,
+                            Email = user.Email
+                        }
+                    )
+                    .ToListAsync();
+
+
+
                 _logger.LogInformation($"User ID {user.Id} retrieved users for Group ID {Id_Group}.");
                 return users;
             }
@@ -256,6 +277,60 @@ namespace GroupTaskManager.GroupTaskManager.Services
                 throw;
             }
         }
+
+        public async Task<List<UserFindResult>> CheckUsers(string Phrase, string type)
+        {
+            List<UserFindResult> results = new List<UserFindResult>();
+
+            // Valid search types
+            var validTypes = new HashSet<string> { "email", "firstname", "lastname" };
+
+            if (!validTypes.Contains(type.ToLower()))
+            {
+                _logger.LogWarning("Invalid search type provided: {Type}", type);
+                return results;  
+            }
+
+            try
+            {
+                _logger.LogInformation("Starting search for users by {Type} with phrase: {Phrase}", type, Phrase);
+
+                IQueryable<UserModel> query = _databaseContext.Users;
+
+                if (type == "email")
+                {
+                    query = query.Where(u => u.Email.Contains(Phrase));
+                }
+                else if (type == "firstname")
+                {
+                    query = query.Where(u => u.Firstname.Contains(Phrase));
+                }
+                else if (type == "lastname")
+                {
+                    query = query.Where(u => u.Lastname.Contains(Phrase));
+                }
+
+                results = await query
+                    .Select(u => new UserFindResult
+                    {
+                        Id = u.Id,
+                        Firstname = u.Firstname,
+                        Lastname = u.Lastname,
+                        Email =  u.Email
+                    })
+                    .ToListAsync();
+
+                _logger.LogInformation("Search completed successfully. {Count} results found.", results.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while searching for users with type: {Type} and phrase: {Phrase}", type, Phrase);
+                return new List<UserFindResult>(); 
+            }
+
+            return results;
+        }
+
 
 
 

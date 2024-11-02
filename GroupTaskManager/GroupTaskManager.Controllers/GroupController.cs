@@ -1,4 +1,5 @@
 ﻿using GroupTaskManager.GroupTaskManager.Database;
+using GroupTaskManager.GroupTaskManager.Models;
 using GroupTaskManager.GroupTaskManager.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -28,8 +29,8 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
         [HttpGet]
         public async Task<IActionResult> GroupUsers(int Id_Group)
         {
-            List<Group_User> users = await _groupManage.GetGroupUsers(await _userManager.GetUserAsync(User), Id_Group);
-
+            List<UserFindResult> users = await _groupManage.GetGroupUsers(await _userManager.GetUserAsync(User), Id_Group);
+            ViewBag.Id_Group = Id_Group;
             return View(users);
         }
 
@@ -75,6 +76,17 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
 
 
 
+        [HttpGet]
+        public async Task<IActionResult> ResultUsers(int Id_Group, string Phrase, string type)
+        {
+            ViewBag.Id_Group = Id_Group;
+            List<UserFindResult> users = await _groupManage.CheckUsers(Phrase, type);
+            return View(users);
+        }
+
+
+
+
         [HttpPost]
         public async Task<IActionResult> AddUser(int Id_Group, string Id_newuser)
         {
@@ -83,6 +95,8 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
             return RedirectToAction("GroupUsers", "Group", new { Id_Group = Id_Group });
 
         }
+
+
         [HttpPost]
         public async Task<IActionResult> DeleteUser(int Id_Group, int Id)
         {

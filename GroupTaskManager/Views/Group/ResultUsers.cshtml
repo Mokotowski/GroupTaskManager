@@ -1,0 +1,29 @@
+﻿@model List<GroupTaskManager.GroupTaskManager.Models.UserFindResult>
+
+@{
+    ViewData["Title"] = "Result searching users";
+}
+
+
+
+<div class="main">
+
+    <h1>Result searching users</h1>
+
+    @foreach(var user in Model)
+    {
+        <div>
+            <p> @user.Firstname @user.Lastname - @user.Email</p>
+
+            <form id="show-group-form" method="post" asp-action="AddUser" asp-controller="Group">
+                <input type="hidden" name="Id_Group" value="@ViewBag.Id_Group" />
+                <input type="hidden" name="Id_newuser" value="@user.Id" />
+
+                <button type="submit" class="btn btn-danger">Add user</button>
+            </form>
+        </div>
+    }
+
+
+</div>
+

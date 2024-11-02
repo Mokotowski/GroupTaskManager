@@ -27,6 +27,7 @@ header, .navbar, .dropdown-menu, .footer {
 
 .dropdown-menu {
     margin-left: -95px;
+    text-align: center;
     background-color: rgb(45, 49, 50);
     border: none;
 }

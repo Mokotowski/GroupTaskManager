@@ -26,15 +26,19 @@
 
                                 @if (User.Identity.IsAuthenticated)
                                 {
-                                    <form method="post" asp-controller="Account" asp-action="Logout">
-                                        <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                    <li class="d-inline"><a class="dropdown-item" href="@Url.Action("MyGroups", "Group")">My Groups</a></li>
+                                    <li class="d-inline"><a class="dropdown-item" href="@Url.Action("ManageGroups", "Group")">Manage Groups</a></li>
+
+                                    <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                                        <button type="submit" class="nav-link btn btn-link d-inline">Logout</button>
                                     </form>
                                 }
                                 else
                                 {
-                                    <li><a class="dropdown-item" href="@Url.Action("Login", "Account")">Login</a></li>
-                                    <li><a class="dropdown-item" href="@Url.Action("Register", "Account")">Register</a></li>
+                                    <li class="d-inline"><a class="dropdown-item" href="@Url.Action("Login", "Account")">Login</a></li>
+                                    <li class="d-inline"><a class="dropdown-item" href="@Url.Action("Register", "Account")">Register</a></li>
                                 }
+
 
                             </ul>
                         </li>

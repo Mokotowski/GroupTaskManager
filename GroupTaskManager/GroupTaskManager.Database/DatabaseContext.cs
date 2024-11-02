@@ -26,18 +26,19 @@ namespace GroupTaskManager.GroupTaskManager.Database
                 .HasOne(g => g.Group)
                 .WithMany(u => u.Group_User)
                 .HasForeignKey(f => f.Id_Group)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade); // Zmienione na Cascade, aby usunięcie grupy usuwało powiązane rekordy
 
             modelBuilder.Entity<TaskRecord>()
                 .HasOne(g => g.Group)
                 .WithMany(u => u.TaskRecord)
                 .HasForeignKey(f => f.Id_Group)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // Pozostawione jako Cascade
 
             modelBuilder.Entity<TaskAnswer>()
                 .HasOne(g => g.TaskRecord)
                 .WithMany(u => u.TaskAnswer)
                 .HasForeignKey(f => f.Id_Task);
+
 
 
             base.OnModelCreating(modelBuilder);

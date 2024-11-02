@@ -1,0 +1,87 @@
+﻿@model List<GroupTaskManager.GroupTaskManager.Database.Group>
+
+@{
+    ViewData["Title"] = "Manage groups";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/managegroups.css" />
+}
+
+<div class="main">
+    <div id="create-group">
+        <h1>Create Group</h1>
+        <form id="create-group-form" method="post" asp-action="CreateGroup" asp-controller="Group">
+            <label for="Name-Group">Name:</label>
+            <input type="text"
+                   name="Name"
+                   id="Name-Group"
+                   required
+                   placeholder="Enter your group name" />
+
+            <label for="Description-Group">Description:</label>
+            <input type="text"
+                   name="Description"
+                   id="Description-Group"
+                   required
+                   placeholder="Enter your group description" />
+
+            <button type="submit">Create Group</button>
+        </form>
+    </div>
+
+    <div id="list-group">
+        <h1>Manage Groups</h1>
+        @if (Model.Count > 0)
+        {
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="list-group-item">
+                    <p>@(i + 1). @Model[i].Name</p>
+                    <form id="update-group-form" method="post" asp-action="UpdateGroup" asp-controller="Group">
+                        <input type="hidden" name="Id_Group" value="@Model[i].Id" />
+
+                        <label for="Name-Group-@i">Name:</label>
+                        <input type="text"
+                               name="Name"
+                               id="Name-Group-@i"
+                               required
+                               value="@Model[i].Name"
+                               placeholder="Enter your group name" />
+
+                        <label for="Description-Group-@i">Description:</label>
+                        <input type="text"
+                               name="Description"
+                               id="Description-Group-@i"
+                               required
+                               value="@Model[i].Description"
+                               placeholder="Enter your group description" />
+
+                        <button type="submit">Update</button>
+                    </form>
+
+                    <div class="button-group">
+                        <form id="checkusers-group-form" method="get" asp-action="GroupUsers" asp-controller="Group">
+                            <input type="hidden" name="Id_Group" value="@Model[i].Id" />
+                            <button type="submit">Check Users</button>
+                        </form>
+
+                        <form id="delete-group-form" method="post" asp-action="DeleteGroup" asp-controller="Group">
+                            <input type="hidden" name="Id_Group" value="@Model[i].Id" />
+                            <button type="submit">Delete</button>
+                        </form>
+
+                        <form id="show-group-form" method="get" asp-action="" asp-controller="">
+                            <input type="hidden" name="Id_Group" value="@Model[i].Id" />
+                            <button type="submit">Show</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>No groups available.</p>
+        }
+    </div>
+</div>
