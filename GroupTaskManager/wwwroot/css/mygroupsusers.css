@@ -1,0 +1,52 @@
+﻿
+.main {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+}
+
+h1 {
+    color: rgb(255, 255, 255);
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.group-list, .user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.group-item, .user-item {
+    background-color: rgb(40, 42, 46);
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.group-name, .user-info {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.btn-show, .btn-add {
+    background-color: rgb(220, 53, 69);
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+    .btn-show:hover, .btn-add:hover {
+        background-color: rgb(200, 40, 55);
+    }
+
+form {
+    margin: 0;
+}
