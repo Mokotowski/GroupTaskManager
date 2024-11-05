@@ -52,6 +52,8 @@ builder.Services.AddScoped<ISendEmail, EmailActionsServies>();
 builder.Services.AddScoped<IGroupManage, GroupServices>();
 builder.Services.AddScoped<IGroupCheck, GroupServices>();
 
+builder.Services.AddScoped<ITaskManageServices, TaskServices>();
+builder.Services.AddScoped<ITaskActionsServices, TaskServices>();
 
 
 builder.Services.AddHttpContextAccessor();
