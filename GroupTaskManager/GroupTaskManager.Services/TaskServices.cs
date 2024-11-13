@@ -2,6 +2,7 @@
 using GroupTaskManager.GroupTaskManager.Models;
 using GroupTaskManager.GroupTaskManager.Services.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.Security.Cryptography;
 
@@ -145,147 +146,197 @@ namespace GroupTaskManager.GroupTaskManager.Services
         }
 
 
-        public async Task AddTaskUser(UserModel user, int Id_Task, List<string> Id_users)
+        public async Task AddTaskUser(UserModel user, int Id_Task, string Id_user)
         {
             try
             {
-                TaskRecord task = await _databaseContext.TaskRecord.FindAsync(Id_Task);
-                Group group = task?.Group;
+                _logger.LogInformation("Attempting to add user {UserId} to task {Id_Task}.", Id_user, Id_Task);
 
-                if (group != null && group.Id_User == user.Id)
+                TaskRecord task = await _databaseContext.TaskRecord.FirstOrDefaultAsync(p => p.Id == Id_Task);
+
+
+                if (task == null)
                 {
-                    List<TaskAnswer> answers = new List<TaskAnswer>();
-
-                    foreach (var userId in Id_users)
-                    {
-                        answers.Add(await TaskCreate(userId, task));
-                    }
-
-                    await _databaseContext.TaskAnswer.AddRangeAsync(answers);
-                    await _databaseContext.SaveChangesAsync();
-                    _logger.LogInformation("Users added to task {TaskId} successfully.", Id_Task);
+                    _logger.LogWarning("Task with ID {Id_Task} not found.", Id_Task);
+                    return;
                 }
+
+                Group group = await _databaseContext.Group.FirstOrDefaultAsync(p => p.Id == task.Id_Group);
+
+                if (group == null || group.Id_User != user.Id)
+                {
+                    _logger.LogWarning("User {Id_user} is not authorized to add users to task {Id_Task}.", user.Id, Id_Task);
+                    return;
+                }
+
+                var taskAnswer = await TaskCreate(Id_user, task);
+                await _databaseContext.TaskAnswer.AddAsync(taskAnswer);
+                await _databaseContext.SaveChangesAsync();
+
+                _logger.LogInformation("User {UserId} successfully added to task {Id_Task}.", Id_user, Id_Task);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while adding users to task {TaskId}.", Id_Task);
+                _logger.LogError(ex, "An error occurred while adding user {Id_user} to task {Id_Task}.", Id_user, Id_Task);
                 throw;
             }
         }
 
 
-        public async Task DeleteTaskUser(UserModel user, int Id_Task, List<string> Id_users)
+
+        public async Task DeleteTaskUser(UserModel user, int Id_Task, string Id_user)
         {
             try
             {
-                TaskRecord task = await _databaseContext.TaskRecord.FindAsync(Id_Task);
-                Group group = task?.Group;
+                _logger.LogInformation("Attempting to remove user {Id_user} from task {Id_Task}.", Id_user, Id_Task);
 
-                if (group != null && group.Id_User == user.Id)
+                TaskRecord task = await _databaseContext.TaskRecord.FirstOrDefaultAsync(p => p.Id == Id_Task);
+
+
+                if (task == null)
                 {
-                    var answers = await _databaseContext.TaskAnswer
-                        .Where(p => Id_users.Contains(p.Id_User) && p.Id_Task == task.Id)
-                        .ToListAsync();
-
-                    _databaseContext.TaskAnswer.RemoveRange(answers);
-                    await _databaseContext.SaveChangesAsync();
-                    _logger.LogInformation("Users removed from task {TaskId} successfully.", Id_Task);
+                    _logger.LogWarning("Task with ID {Id_Task} not found.", Id_Task);
+                    return;
                 }
+
+                Group group = await _databaseContext.Group.FirstOrDefaultAsync(p => p.Id == task.Id_Group);
+
+                if (group == null || group.Id_User != user.Id)
+                {
+                    _logger.LogWarning("User {Id_user} is not authorized to remove users from task {Id_Task}.", user.Id, Id_Task);
+                    return;
+                }
+
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FirstOrDefaultAsync(p => p.Id_User == Id_user && p.Id_Task == Id_Task);
+
+                if (answer == null)
+                {
+                    _logger.LogWarning("No TaskAnswer found for user {Id_user} in task {Id_Task}.", Id_user, Id_Task);
+                    return;
+                }
+
+                _databaseContext.TaskAnswer.Remove(answer);
+                await _databaseContext.SaveChangesAsync();
+
+                _logger.LogInformation("User {Id_user} successfully removed from task {Id_Task}.", Id_user, Id_Task);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while removing users from task {TaskId}.", Id_Task);
+                _logger.LogError(ex, "An error occurred while removing user {Id_user} from task {Id_Task}.", Id_user, Id_Task);
                 throw;
             }
         }
+
 
 
         public async Task<List<UserTasksProgress>> GetUsersTask(UserModel user, int Id_Task)
         {
             try
             {
-                TaskRecord task = await _databaseContext.TaskRecord.FindAsync(Id_Task);
-                Group group = task?.Group;
+                _logger.LogInformation("Retrieving users for task {TaskId}.", Id_Task);
 
-                if (group != null && group.Id_User == user.Id)
+                TaskRecord task = await _databaseContext.TaskRecord.FirstOrDefaultAsync(t => t.Id == Id_Task);
+
+                if (task == null)
                 {
-                    var userTasksProgress = await _databaseContext.TaskAnswer
-                        .Where(taskRecord => taskRecord.Id_Task == Id_Task)
-                        .Join(
-                            _databaseContext.Users,
-                            taskRecord => taskRecord.Id_User,
-                            usr => usr.Id,
-                            (taskRecord, usr) => new UserTasksProgress
-                            {
-                                Id = taskRecord.Id,
-                                Firstname = usr.Firstname,
-                                Lastname = usr.Lastname,
-                                Id_User = taskRecord.Id_User,
-                                State = taskRecord.State,
-                                Completed = taskRecord.Completed,
-                                CompletedTime = taskRecord.CompletedTime,
-                                AddToTask = true
-                            })
-                        .ToListAsync();
-
-                    _logger.LogInformation("Retrieved users for task {TaskId}.", Id_Task);
-                    return userTasksProgress;
+                    _logger.LogWarning("Task with ID {TaskId} not found.", Id_Task);
+                    return new List<UserTasksProgress>();
                 }
+
+                Group group = await _databaseContext.Group.FirstOrDefaultAsync(g => g.Id == task.Id_Group);
+
+                if (group == null || group.Id_User != user.Id)
+                {
+                    _logger.LogWarning("User {UserId} is not authorized to view users for task {TaskId}.", user.Id, Id_Task);
+                    return new List<UserTasksProgress>();
+                }
+
+                List<TaskAnswer> taskAnswers = await _databaseContext.TaskAnswer
+                    .Where(p => p.Id_Task == Id_Task)
+                    .ToListAsync();
+
+                var userIds = taskAnswers.Select(p => p.Id_User).ToList();
+                List<UserModel> users = await _databaseContext.Users
+                    .Where(p => userIds.Contains(p.Id))
+                    .ToListAsync();
+
+                List<UserTasksProgress> usersTask = users.Select(useran =>
+                {
+                    var answer = taskAnswers.Single(p => p.Id_User == useran.Id);
+                    return new UserTasksProgress
+                    {
+                        Id = answer.Id,
+                        Firstname = useran.Firstname,
+                        Lastname = useran.Lastname,
+                        Id_User = useran.Id,
+                        State = answer.State,
+                        Completed = answer.Completed,
+                        CompletedTime = answer.CompletedTime,
+                        AddToTask = true
+                    };
+                }).ToList();
+
+                _logger.LogInformation("Successfully retrieved users for task {TaskId}.", Id_Task);
+                return usersTask;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while retrieving users for task {TaskId}.", Id_Task);
                 throw;
             }
-
-            return new List<UserTasksProgress>();
         }
+
 
         public async Task<List<UserTasksProgress>> GetUsersGroupForTask(UserModel user, int Id_Task)
         {
-            var taskGroupData = await _databaseContext.TaskRecord
-                .Where(p => p.Id == Id_Task)
-                .Select(p => new
-                {
-                    Task = p,
-                    Group = p.Group
-                })
-                .FirstOrDefaultAsync();
-
-            if (taskGroupData == null || taskGroupData.Group?.Id_User != user.Id)
+            try
             {
-                return new List<UserTasksProgress>();
-            }
+                _logger.LogInformation("Retrieving group users for task {TaskId}.", Id_Task);
 
-            var groupUserIds = await _databaseContext.Group_User
-                .Where(g => g.Id_Group == taskGroupData.Group.Id)
-                .Select(g => g.Id_User)
-                .ToListAsync();
+                List<UserTasksProgress> users = await GetUsersTask(user, Id_Task);
+                TaskRecord task = await _databaseContext.TaskRecord.FirstOrDefaultAsync(t => t.Id == Id_Task);
 
-            var usersInGroup = await _databaseContext.Users
-                .Where(u => groupUserIds.Contains(u.Id))
-                .ToListAsync();
-
-            var userTaskProgress = await GetUsersTask(user, Id_Task);
-
-            var results = userTaskProgress.ToList();
-
-            foreach (var userInGroup in usersInGroup)
-            {
-                if (!results.Any(p => p.Id_User == userInGroup.Id))
+                if (task == null)
                 {
-                    results.Add(new UserTasksProgress
-                    {
-                        Firstname = userInGroup.Firstname,
-                        Lastname = userInGroup.Lastname,
-                        Id_User = userInGroup.Id,
-                        AddToTask = false,
-                    });
+                    _logger.LogWarning("Task with ID {TaskId} not found.", Id_Task);
+                    return users;
                 }
-            }
 
-            return results;
+                List<UserTasksProgress> groupUsers = await _databaseContext.Group_User
+                    .Where(p => p.Id_Group == task.Id_Group)
+                    .Join(
+                        _databaseContext.Users,
+                        groupUser => groupUser.Id_User,
+                        user => user.Id,
+                        (groupUser, user) => new UserTasksProgress
+                        {
+                            Id_User = user.Id,
+                            Firstname = user.Firstname,
+                            Lastname = user.Lastname,
+                            AddToTask = false 
+                        })
+                    .ToListAsync();
+
+                foreach (var usergroup in groupUsers)
+                {
+                    if (!users.Any(p => p.Id_User == usergroup.Id_User))
+                    {
+                        users.Add(usergroup);
+                    }
+                }
+
+                _logger.LogInformation("Successfully retrieved group users for task {TaskId}.", Id_Task);
+                return users;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving group users for task {TaskId}.", Id_Task);
+                throw;
+            }
         }
+
+
+
         public async Task<List<TaskRecord>> MyManageTasks(UserModel user, int Id_Group)
         {
             try
@@ -314,6 +365,34 @@ namespace GroupTaskManager.GroupTaskManager.Services
 
             return new List<TaskRecord>();
         }
+
+        public async Task<TaskRecord> MyManageTask(UserModel user, int Id_Task)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to retrieve task {Id_Task} for user {UserId}.", Id_Task, user.Id);
+
+                TaskRecord task = await _databaseContext.TaskRecord.FirstOrDefaultAsync(t => t.Id == Id_Task);
+
+                if (task == null)
+                {
+                    _logger.LogWarning("Task with ID {Id_Task} not found.", Id_Task);
+                    return null; 
+                }
+
+                _logger.LogInformation("Task {Id_Task} retrieved successfully for user {UserId}.", Id_Task, user.Id);
+
+                return task;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving task {Id_Task} for user {UserId}.", Id_Task, user.Id);
+                throw;
+            }
+        }
+
+
+
 
         public async Task ChangeState(UserModel user, int Id, string State)
         {

@@ -1,0 +1,69 @@
+﻿@model GroupTaskManager.GroupTaskManager.Models.SingleTaskData
+
+@{
+    ViewData["Title"] = "Manage Users in Task";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/managetaskusers.css" />
+}
+
+<div class="main">
+
+    <div class="task-details">
+        <h2 class="task-name">@Model.TaskData.Name</h2>
+        <p class="task-description">@Model.TaskData.Description</p>
+
+        <div class="task-info">
+            <div class="task-info-item">
+                <span class="task-info-icon">📋</span>
+                <span class="task-info-label">Answer Type:</span>
+                <span class="task-info-value">@Model.TaskData.AnswerType</span>
+            </div>
+
+            <div class="task-info-item">
+                <span class="task-info-icon">🕒</span>
+                <span class="task-info-label">Time:</span>
+                <span class="task-info-value">
+                    @Model.TaskData.AddTime - @Model.TaskData.EndTime
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="users-section">
+
+        <div class="users-column" id="list-users-task">
+            <h3>Users in Task</h3>
+            @foreach (var user in Model.Users_task)
+            {
+                @if (user.AddToTask)
+                {
+                    <form class="user-form" method="post" asp-action="DeleteTaskUser" asp-controller="Task">
+                        <strong>@user.Firstname @user.Lastname</strong>
+                        <input type="hidden" name="Id_Task" value="@ViewBag.Id_Task" />
+                        <input type="hidden" name="Id_user" value="@user.Id_User" />
+                        <button type="submit" class="btn btn-danger">Remove User</button>
+                    </form>
+                }
+            }
+        </div>
+
+        <div class="users-column" id="list-users-group">
+            <h3>Users in Group</h3>
+            @foreach (var user in Model.Users_group)
+            {
+                @if (!user.AddToTask)
+                {
+                    <form class="user-form" method="post" asp-action="AddTaskUser" asp-controller="Task">
+                        <strong>@user.Firstname @user.Lastname</strong>
+                        <input type="hidden" name="Id_Task" value="@ViewBag.Id_Task" />
+                        <input type="hidden" name="Id_user" value="@user.Id_User" />
+                        <button type="submit" class="btn btn-primary">Add User</button>
+                    </form>
+                }
+            }
+        </div>
+    </div>
+</div>

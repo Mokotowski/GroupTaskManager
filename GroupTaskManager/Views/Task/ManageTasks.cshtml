@@ -1,0 +1,169 @@
+﻿@model List<GroupTaskManager.GroupTaskManager.Models.SingleTaskData>
+
+@{
+    ViewData["Title"] = "Manage Tasks";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/managetasks.css" />
+}
+
+<div class="main">
+    <div id="create-task">
+        <h1>Create Task</h1>
+        <form id="create-task-form" method="post" asp-action="CreateTask" asp-controller="Task" onsubmit="return validateForm()">
+            <input type="hidden" name="Id_Group" value="@ViewBag.Id_Group" />
+
+            <label for="Name">Task Name:</label>
+            <input type="text" name="Name" id="Name" required placeholder="Enter task name" />
+
+            <label for="Description">Description:</label>
+            <textarea name="Description" id="Description" required placeholder="Describe the task"></textarea>
+
+            <label for="AnswerType">Answer Type:</label>
+            <select name="AnswerType" id="AnswerType">
+                <option value="Text">Text</option>
+                <option value="File">File</option>
+                <option value="Both">Both</option>
+            </select>
+
+            <label for="end">End Date:</label>
+            <input type="datetime-local" name="end" id="end" required />
+
+            <span id="error-message" style="color: red; display: none;"></span>
+
+            <button type="submit">Create Task</button>
+        </form>
+    </div>
+
+    <div id="list-tasks">
+        <h1>Manage Tasks</h1>
+        @if (Model.Count > 0)
+        {
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="task-item">
+                    <p>@(i + 1). @Model[i].TaskData.Name</p>
+                    <form method="post" asp-action="UpdateTask" asp-controller="Task" onsubmit="return validateUpdateForm(@i)">
+                        <input type="hidden" name="Id" value="@Model[i].TaskData.Id" />
+                        <input type="hidden" name="Id_Group" value="@Model[i].TaskData.Id_Group" />
+
+                        <label for="Name-Task-@i">Task Name:</label>
+                        <input type="text" name="Name" id="Name-Task-@i" value="@Model[i].TaskData.Name" required placeholder="Enter task name" />
+
+                        <label for="Description-Task-@i">Description:</label>
+                        <textarea name="Description" id="Description-Task-@i" required placeholder="Describe the task">@Model[i].TaskData.Description</textarea>
+
+                        <label for="AnswerType-Task-@i">Answer Type:</label>
+                        <select name="AnswerType" id="AnswerType-Task-@i">
+                            @if (Model[i].TaskData.AnswerType == "Text")
+                            {
+                                <option value="Text" selected>Text</option>
+                            }
+                            else
+                            {
+                                <option value="Text">Text</option>
+                            }
+
+                            @if (Model[i].TaskData.AnswerType == "File")
+                            {
+                                <option value="File" selected>File</option>
+                            }
+                            else
+                            {
+                                <option value="File">File</option>
+                            }
+
+                            @if (Model[i].TaskData.AnswerType == "Both")
+                            {
+                                <option value="Both" selected>Both</option>
+                            }
+                            else
+                            {
+                                <option value="Both">Both</option>
+                            }
+                        </select>
+
+                        <label for="End-Task-@i">End Date:</label>
+                        <input type="datetime-local" name="end" id="End-Task-@i" value="@Model[i].TaskData.EndTime.ToString("yyyy-MM-ddTHH:mm")" required />
+
+                        <span id="error-message-@i" style="color: red; display: none;"></span>
+
+                        <button type="submit">Update</button>
+                    </form>
+
+                    <div class="button-group">
+                        <form method="post" asp-action="DeleteTask" asp-controller="Task">
+                            <input type="hidden" name="Id" value="@Model[i].TaskData.Id" />
+                            <input type="hidden" name="Id_Group" value="@Model[i].TaskData.Id_Group" />
+                            <button type="submit">Delete</button>
+                        </form>
+
+                        <form method="get" asp-action="ManageUsers" asp-controller="Task">
+                            <input type="hidden" name="Id_Task" value="@Model[i].TaskData.Id" />
+                            <button type="submit">Manage Users</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>No tasks available.</p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function validateForm() {
+            const name = document.getElementById("Name").value;
+            const description = document.getElementById("Description").value;
+            const endDate = document.getElementById("end").value;
+            const currentDate = new Date().toISOString().slice(0, 16);
+            const errorMessageElement = document.getElementById("error-message");
+
+            errorMessageElement.style.display = "none";
+            errorMessageElement.innerHTML = "";
+
+            if (!name || !description) {
+                errorMessageElement.style.display = "block";
+                errorMessageElement.innerHTML = "Task name and description are required.";
+                return false;
+            }
+
+            if (endDate <= currentDate) {
+                errorMessageElement.style.display = "block";
+                errorMessageElement.innerHTML = "End date must be later than the current date and time.";
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateUpdateForm(index) {
+            const name = document.getElementById(`Name-Task-${index}`).value;
+            const description = document.getElementById(`Description-Task-${index}`).value;
+            const endDate = document.getElementById(`End-Task-${index}`).value;
+            const currentDate = new Date().toISOString().slice(0, 16);
+            const errorMessageElement = document.getElementById(`error-message-${index}`);
+
+            errorMessageElement.style.display = "none";
+            errorMessageElement.innerHTML = "";
+
+            if (!name || !description) {
+                errorMessageElement.style.display = "block";
+                errorMessageElement.innerHTML = "Task name and description are required.";
+                return false;
+            }
+
+            if (endDate <= currentDate) {
+                errorMessageElement.style.display = "block";
+                errorMessageElement.innerHTML = "End date must be later than the current date and time.";
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+}
