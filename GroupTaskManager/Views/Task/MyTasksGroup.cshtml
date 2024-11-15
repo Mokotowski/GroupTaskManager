@@ -1,0 +1,47 @@
+﻿@model List<GroupTaskManager.GroupTaskManager.Database.TaskRecord>
+
+@{
+    ViewData["Title"] = "Group Tasks";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/tasks.css" />
+}
+
+
+
+<div class="main">
+    <h2>Group Tasks</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Task Name</th>
+                <th>Description</th>
+                <th>Answer Type</th>
+                <th>Add Time</th>
+                <th>End Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Model)
+            {
+                <tr>
+                    <td>@task.Name</td>
+                    <td>@task.Description</td>
+                    <td>@task.AnswerType</td>
+                    <td>@task.AddTime.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@task.EndTime.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+
+                        <form id="show-group-form" method="get" asp-action="WorkTask" asp-controller="Task">
+                            <input type="hidden" name="Id" value="@task.Id" />
+                            <button type="submit" class="btn-show">Tasks</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

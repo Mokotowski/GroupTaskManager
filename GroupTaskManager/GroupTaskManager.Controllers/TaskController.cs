@@ -1,5 +1,6 @@
 ﻿using GroupTaskManager.GroupTaskManager.Database;
 using GroupTaskManager.GroupTaskManager.Models;
+using GroupTaskManager.GroupTaskManager.Services;
 using GroupTaskManager.GroupTaskManager.Services.Interface;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
     {
         private readonly UserManager<UserModel> _userManager;
         private readonly ITaskManageServices _taskManage;
+        private readonly ITaskActionsServices _taskActions;
         private readonly DatabaseContext _databaseContext;
-        public TaskController(UserManager<UserModel> userManager, ITaskManageServices taskManage)
+        public TaskController(UserManager<UserModel> userManager, ITaskManageServices taskManage, ITaskActionsServices taskActions)
         {
             _userManager = userManager;
             _taskManage = taskManage;
+            _taskActions = taskActions;
         }
 
 
@@ -75,11 +78,42 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
             return View(tasks);
         }
 
+
+
+
         [HttpGet]
-        public async Task<IActionResult> MyTasks(int Id_Group)
+        public async Task<IActionResult> MyTasks()
         {
-            return View();
+            UserModel user = await _userManager.GetUserAsync(User);
+            List<TaskRecord> tasks = await _taskActions.MyTasks(user);
+
+            return View(tasks);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> MyTasksGroup(int Id_Group)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+            List<TaskRecord> tasks = await _taskActions.MyTasksGroup(user, Id_Group);
+            return View(tasks);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> WorkTask(int Id)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+            TaskWorkModel task = await _taskActions.WorkTask(user, Id);
+
+            return View(task);
+        }
+
+
+
+
+
+
+
+
 
 
 
@@ -133,6 +167,75 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
 
 
 
+        [HttpPost]
+        public async Task<IActionResult> ChangeState(int Id, string State)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            await _taskActions.ChangeState(user, Id, State);
+
+            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddAnswer(int Id, string? answer, IFormFile? file)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            byte[]? fileanswer = null;
+            string? extensionfile = null;
+
+            if (file != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await file.CopyToAsync(memoryStream);
+                    fileanswer = memoryStream.ToArray();
+                }
+
+                extensionfile = Path.GetExtension(file.FileName);
+            }
+
+            await _taskActions.AddAnswer(user, Id, answer, fileanswer, extensionfile);
+
+            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadFile(int Id)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            var fileResult = await _taskActions.DownloadAnswerFile(user, Id);
+
+            if (fileResult == null)
+            {
+                return NotFound("File not found or you do not have permission to download it.");
+            }
+
+            return fileResult;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteFile(int Id)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            await _taskActions.DeleteAnswerFile(user, Id);
+
+            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+        }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> Complete(int Id)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            await _taskActions.Complete(user, Id);
+
+            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+        }
 
 
     }

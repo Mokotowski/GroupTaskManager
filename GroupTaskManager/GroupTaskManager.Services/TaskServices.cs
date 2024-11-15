@@ -1,6 +1,7 @@
 ﻿using GroupTaskManager.GroupTaskManager.Database;
 using GroupTaskManager.GroupTaskManager.Models;
 using GroupTaskManager.GroupTaskManager.Services.Interface;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Formats.Asn1;
@@ -8,7 +9,7 @@ using System.Security.Cryptography;
 
 namespace GroupTaskManager.GroupTaskManager.Services
 {
-    public class TaskServices :  ITaskManageServices, ITaskActionsServices
+    public class TaskServices : ITaskManageServices, ITaskActionsServices
     {
         private readonly DatabaseContext _databaseContext;
         private readonly ILogger<TaskServices> _logger;
@@ -313,7 +314,7 @@ namespace GroupTaskManager.GroupTaskManager.Services
                             Id_User = user.Id,
                             Firstname = user.Firstname,
                             Lastname = user.Lastname,
-                            AddToTask = false 
+                            AddToTask = false
                         })
                     .ToListAsync();
 
@@ -377,7 +378,7 @@ namespace GroupTaskManager.GroupTaskManager.Services
                 if (task == null)
                 {
                     _logger.LogWarning("Task with ID {Id_Task} not found.", Id_Task);
-                    return null; 
+                    return null;
                 }
 
                 _logger.LogInformation("Task {Id_Task} retrieved successfully for user {UserId}.", Id_Task, user.Id);
@@ -390,6 +391,138 @@ namespace GroupTaskManager.GroupTaskManager.Services
                 throw;
             }
         }
+
+
+
+
+
+
+
+        public async Task AddAnswer(UserModel user, int Id, string? answer, byte[]? fileanswer, string? extensionfile)
+        {
+            try
+            {
+                _logger.LogInformation("Starting AddAnswer for User {UserId} and TaskAnswer {AnswerId}.", user.Id, Id);
+
+                TaskAnswer taskAnswer = await _databaseContext.TaskAnswer.FindAsync(Id);
+
+                if (taskAnswer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with Id {AnswerId} not found.", Id);
+                    return;
+                }
+
+                if (taskAnswer.Id_User == user.Id)
+                {
+                    if (answer != null)
+                    {
+                        taskAnswer.ResultString = answer;
+                        _logger.LogInformation("Text answer updated for TaskAnswer {AnswerId} by User {UserId}.", Id, user.Id);
+                    }
+
+                    if (fileanswer != null && extensionfile != null)
+                    {
+                        taskAnswer.ResultFile = fileanswer;
+                        taskAnswer.ResultFileExtension = extensionfile;
+                        _logger.LogInformation("File answer updated for TaskAnswer {AnswerId} by User {UserId}.", Id, user.Id);
+                    }
+
+                    await _databaseContext.SaveChangesAsync();
+                    _logger.LogInformation("Changes successfully saved for TaskAnswer {AnswerId} by User {UserId}.", Id, user.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("User {UserId} does not have permission to add answer for TaskAnswer {AnswerId}.", user.Id, Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while adding answer for TaskAnswer {AnswerId}.", Id);
+                throw;
+            }
+        }
+
+
+        public async Task<FileResult?> DownloadAnswerFile(UserModel user, int Id)
+        {
+            try
+            {
+                _logger.LogInformation("Starting file download process for User {UserId} and TaskAnswer {AnswerId}.", user.Id, Id);
+
+                var taskAnswer = await _databaseContext.TaskAnswer.FindAsync(Id);
+
+                if (taskAnswer == null)
+                {
+                    _logger.LogWarning("Task answer with ID {Id} was not found.", Id);
+                    return null;
+                }
+
+                if (taskAnswer.Id_User != user.Id)
+                {
+                    _logger.LogWarning("User {UserId} does not have permission to download the file for TaskAnswer {AnswerId}.", user.Id, Id);
+                    return null;
+                }
+
+                if (taskAnswer.ResultFile == null || string.IsNullOrEmpty(taskAnswer.ResultFileExtension))
+                {
+                    _logger.LogWarning("No file available to download for TaskAnswer {AnswerId} by User {UserId}.", Id, user.Id);
+                    return null;
+                }
+
+                byte[] fileData = taskAnswer.ResultFile;
+                string fileExtension = taskAnswer.ResultFileExtension;
+                string fileName = $"AnswerFile{fileExtension}";
+
+                _logger.LogInformation("File for TaskAnswer {AnswerId} prepared for download by User {UserId}.", Id, user.Id);
+
+                return new FileContentResult(fileData, "application/octet-stream")
+                {
+                    FileDownloadName = fileName
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while downloading the file for TaskAnswer {AnswerId}.", Id);
+                throw;
+            }
+        }
+
+
+        public async Task DeleteAnswerFile(UserModel user, int Id)
+        {
+            try
+            {
+                _logger.LogInformation("Starting DeleteAnswerFile for User {UserId} and TaskAnswer {AnswerId}.", user.Id, Id);
+
+                TaskAnswer taskAnswer = await _databaseContext.TaskAnswer.FindAsync(Id);
+
+                if (taskAnswer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with Id {AnswerId} not found.", Id);
+                    return;
+                }
+
+                if (taskAnswer.Id_User == user.Id)
+                {
+                    taskAnswer.ResultFile = null;
+                    taskAnswer.ResultFileExtension = null;
+
+                    await _databaseContext.SaveChangesAsync();
+
+                    _logger.LogInformation("File answer successfully deleted for TaskAnswer {AnswerId} by User {UserId}.", Id, user.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("User {UserId} does not have permission to delete file answer for TaskAnswer {AnswerId}.", user.Id, Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while deleting file answer for TaskAnswer {AnswerId}.", Id);
+                throw;
+            }
+        }
+
 
 
 
@@ -418,7 +551,7 @@ namespace GroupTaskManager.GroupTaskManager.Services
             }
         }
 
-        public async Task Complete(UserModel user, int Id, string State, string Result, byte[] result)
+        public async Task Complete(UserModel user, int Id)
         {
             try
             {
@@ -426,11 +559,11 @@ namespace GroupTaskManager.GroupTaskManager.Services
 
                 if (answer != null && answer.Id_User == user.Id)
                 {
-                    answer.State = State;
-                    answer.ResultString = Result;
-                    answer.ResultFile = result;
+                    answer.Completed = true;
+                    answer.CompletedTime = DateTime.Now;
+                    answer.State = "Completed";
                     await _databaseContext.SaveChangesAsync();
-                    _logger.LogInformation("Task answer {AnswerId} completed with new state {State} by user {UserId}.", Id, State, user.Id);
+                    _logger.LogInformation("Task answer {AnswerId} completed by user {UserId}.", Id, user.Id);
                 }
                 else
                 {
@@ -449,12 +582,15 @@ namespace GroupTaskManager.GroupTaskManager.Services
         {
             try
             {
+                _logger.LogInformation("Retrieving tasks for user {UserId}.", user.Id);
+
                 var tasks = await _databaseContext.TaskAnswer
                     .Where(p => p.Id_User == user.Id)
                     .Select(p => p.TaskRecord)
                     .ToListAsync();
 
-                _logger.LogInformation("Retrieved tasks for user {UserId}.", user.Id);
+                _logger.LogInformation("Successfully retrieved {TaskCount} tasks for user {UserId}.", tasks.Count, user.Id);
+
                 return tasks;
             }
             catch (Exception ex)
@@ -463,5 +599,65 @@ namespace GroupTaskManager.GroupTaskManager.Services
                 throw;
             }
         }
+
+        public async Task<List<TaskRecord>> MyTasksGroup(UserModel user, int Id_Group)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving tasks for user {UserId} in group {GroupId}.", user.Id, Id_Group);
+
+                List<TaskRecord> alltasks = await MyTasks(user);
+                List<TaskRecord> tasks = alltasks.Where(p => p.Id_Group == Id_Group).ToList();
+
+                _logger.LogInformation("Successfully retrieved {TaskCount} tasks for user {UserId} in group {GroupId}.", tasks.Count, user.Id, Id_Group);
+
+                return tasks;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving tasks for user {UserId} in group {GroupId}.", user.Id, Id_Group);
+                throw;
+            }
+        }
+
+        public async Task<TaskWorkModel> WorkTask(UserModel user, int Id)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving work task for user {UserId} and task {TaskId}.", user.Id, Id);
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(Id);
+
+                if (record == null)
+                {
+                    _logger.LogWarning("TaskRecord with ID {TaskId} not found for user {UserId}.", Id, user.Id);
+                    throw new InvalidOperationException($"TaskRecord with ID {Id} not found.");
+                }
+
+                TaskAnswer answer = await _databaseContext.TaskAnswer
+                    .SingleOrDefaultAsync(p => p.Id_Task == record.Id && p.Id_User == user.Id);
+
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer not found for TaskRecord {TaskId} and user {UserId}.", Id, user.Id);
+                    throw new InvalidOperationException($"TaskAnswer not found for TaskRecord {Id} and user {user.Id}.");
+                }
+
+                TaskWorkModel task = new TaskWorkModel(record, answer);
+
+                _logger.LogInformation("Successfully retrieved work task for user {UserId} and task {TaskId}.", user.Id, Id);
+
+                return task;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving work task for user {UserId} and task {TaskId}.", user.Id, Id);
+                throw;
+            }
+        }
+
+
+
+
     }
 }

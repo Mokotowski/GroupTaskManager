@@ -1,0 +1,174 @@
+﻿@model GroupTaskManager.GroupTaskManager.Models.TaskWorkModel
+
+@{
+    ViewData["Title"] = "Work on Task";
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/workontask.css" />
+}
+
+<div class="main">
+    <div class="taskwork">
+
+        <h2 class="task-title">Task: @Model.record.Name</h2>
+        <p class="task-description">@Model.record.Description</p>
+
+        <div class="task-details">
+            <div class="detail">
+                <span class="detail-label">Answer Type:</span>
+                <span class="detail-value">
+                    @if (Model.record.AnswerType == "Both")
+                    {
+                        @:File and Text
+                    }
+                    else
+                    {
+                        @Model.record.AnswerType
+                    }
+                </span>
+            </div>
+            <div class="detail">
+                <span class="detail-label">Added on:</span>
+                <span class="detail-value">@Model.record.AddTime.ToString("g")</span>
+            </div>
+            <div class="detail">
+                <span class="detail-label">End Time:</span>
+                <span class="detail-value">@Model.record.EndTime.ToString("g")</span>
+            </div>
+            <div class="detail">
+                <span class="detail-label">Current State:</span>
+                <span class="detail-value">@Model.answer.State</span>
+            </div>
+        </div>
+
+        <hr />
+
+        @if (Model.record.AnswerType == "Both" || Model.record.AnswerType == "Text")
+        {
+            <h3>Submitted Answer</h3>
+            @if (!string.IsNullOrEmpty(Model.answer.ResultString))
+            {
+                <p><strong>Text Answer:</strong> @Model.answer.ResultString</p>
+            }
+            else
+            {
+                <p><em>No text answer provided.</em></p>
+            }
+        }
+
+        @if (Model.record.AnswerType == "Both" || Model.record.AnswerType == "File")
+        {
+            @if (Model.answer.ResultFile != null && !string.IsNullOrEmpty(Model.answer.ResultFileExtension))
+            {
+                <p>
+                    <strong>File Answer:</strong>
+                    <a href="@Url.Action("DownloadFile", "Task", new { id = Model.answer.Id })" 
+                    download="AnswerFile@Model.answer.ResultFileExtension">Download File</a>
+                </p>
+                @if (Model.answer.State != "Completed")
+                {
+                    <p>
+
+                        <form asp-action="DeleteFile" method="post">
+                            <input type="hidden" name="Id" value="@Model.answer.Id" />
+
+                            <button type="submit" class="btn btn-success">Delete File</button>
+                        </form>
+
+                    </p>
+                }
+
+            }
+            else
+            {
+                <p><em>No file answer provided.</em></p>
+            }
+
+        }
+        <hr />
+
+
+    @if (Model.answer.State != "Completed")
+    {
+        <h3>Change Task State</h3>
+        <form asp-action="ChangeState" method="post">
+            <input type="hidden" name="Id" value="@Model.record.Id" />
+            <select name="State" class="form-select">
+                @if (Model.answer.State == "To Do")
+                {
+                    <option value="To Do" selected>To Do</option>
+                }
+                else
+                {
+                    <option value="To Do">To Do</option>
+                }
+
+                @if (Model.answer.State == "In Progress")
+                {
+                    <option value="In Progress" selected>In Progress</option>
+                }
+                else
+                {
+                    <option value="In Progress">In Progress</option>
+                }
+
+                @if (Model.answer.State == "Testing")
+                {
+                    <option value="Testing" selected>Testing</option>
+                }
+                else
+                {
+                    <option value="Testing">Testing</option>
+                }
+
+                @if (Model.answer.State == "Approved")
+                {
+                    <option value="Approved" selected>Approved</option>
+                }
+                else
+                {
+                    <option value="Approved">Approved</option>
+                }
+
+            </select>
+            <button type="submit" class="btn btn-primary">Change State</button>
+        </form>
+
+        <hr />
+
+        <h3>Add Answer</h3>
+        <form asp-action="AddAnswer" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="Id" value="@Model.record.Id" />
+
+            @if (Model.record.AnswerType == "Both" || Model.record.AnswerType == "Text")
+            {
+                <div class="form-group">
+                    <label for="answer">Answer</label>
+                    <textarea name="answer" class="form-control" rows="3" maxlength="1000" placeholder="Add answer">@Model.answer.ResultString</textarea>
+                </div>
+            }
+
+            @if (Model.record.AnswerType == "Both" || Model.record.AnswerType == "File")
+            {
+
+                <div class="form-group">
+                    <label for="file">Upload File</label>
+                    <input type="file" name="file" class="form-control" />
+                </div>
+            }
+
+            <button type="submit" class="btn btn-success">Submit Answer</button>
+        </form>
+
+        <hr />
+
+        <form asp-action="Complete" method="post">
+            <input type="hidden" name="Id" value="@Model.record.Id" />
+            <button type="submit" class="btn btn-warning">Mark as Complete</button>
+        </form>
+    }
+
+    </div>
+</div>

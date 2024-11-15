@@ -26,6 +26,7 @@
 
                                 @if (User.Identity.IsAuthenticated)
                                 {
+                                    <li class="d-inline"><a class="dropdown-item" href="@Url.Action("MyTasks", "Task")">My Tasks</a></li>
                                     <li class="d-inline"><a class="dropdown-item" href="@Url.Action("MyGroups", "Group")">My Groups</a></li>
                                     <li class="d-inline"><a class="dropdown-item" href="@Url.Action("ManageGroups", "Group")">Manage Groups</a></li>
 

@@ -15,6 +15,7 @@ namespace GroupTaskManager.GroupTaskManager.Database
         [StringLength(1000, ErrorMessage = "Result cannot exceed 1000 characters.")]
         public string? ResultString { get; set; }
         public byte[]? ResultFile { get; set; }
+        public string? ResultFileExtension { get; set; }
 
 
         public TaskRecord TaskRecord { get; set; }

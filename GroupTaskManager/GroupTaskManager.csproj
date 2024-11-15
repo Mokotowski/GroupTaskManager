@@ -10,6 +10,7 @@
     <_ContentIncludedByDefault Remove="wwwroot\css\managetaskusers.css" />
     <_ContentIncludedByDefault Remove="wwwroot\css\mygroupsusers.css" />
     <_ContentIncludedByDefault Remove="wwwroot\css\resetpassword.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\css\tasks.css" />
   </ItemGroup>
 
   <ItemGroup>

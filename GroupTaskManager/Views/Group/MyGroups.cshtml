@@ -21,6 +21,11 @@
                     <input type="hidden" name="Id_Group" value="@Model[i].Id" />
                     <button type="submit" class="btn-show">Show</button>
                 </form>
+
+                <form id="show-group-form" method="get" asp-action="MyTasksGroup" asp-controller="Task">
+                    <input type="hidden" name="Id_Group" value="@Model[i].Id" />
+                    <button type="submit" class="btn-show">Tasks</button>
+                </form>
             </div>
         }
     </div>
