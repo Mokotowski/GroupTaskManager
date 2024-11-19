@@ -16,7 +16,7 @@ namespace GroupTaskManager.GroupTaskManager.Database
         public string? ResultString { get; set; }
         public byte[]? ResultFile { get; set; }
         public string? ResultFileExtension { get; set; }
-
+        public string? ResultComment { get; set; }
 
         public TaskRecord TaskRecord { get; set; }
     }

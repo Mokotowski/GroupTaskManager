@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 
 namespace GroupTaskManager.GroupTaskManager.Services
 {
-    public class TaskServices : ITaskManageServices, ITaskActionsServices
+    public class TaskServices : ITaskManageServices, ITaskActionsServices, ITaskUserResult
     {
         private readonly DatabaseContext _databaseContext;
         private readonly ILogger<TaskServices> _logger;
@@ -657,6 +657,268 @@ namespace GroupTaskManager.GroupTaskManager.Services
         }
 
 
+
+
+
+
+
+
+
+
+        private async Task<bool> CheckPermission(UserModel user, TaskRecord record)
+        {
+            try
+            {
+                Group group = await _databaseContext.Group.FindAsync(record.Id_Group);
+                return user.Id == group.Id_User;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while checking permissions for user {UserId}.", user.Id);
+                return false;
+            }
+
+        }
+
+
+
+
+        public async Task InCompleted(UserModel user, int Id, string State)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return;
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                if (record == null || !await CheckPermission(user, record))
+                {
+                    _logger.LogWarning("Permission denied for user {UserId} on TaskRecord {RecordId}.", user.Id, record?.Id);
+                    return;
+                }
+
+                answer.Completed = false;
+                answer.CompletedTime = null;
+                answer.State = State;
+
+                await _databaseContext.SaveChangesAsync();
+                _logger.LogInformation("Marked TaskAnswer {AnswerId} as incomplete by user {UserId}.", Id, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while marking TaskAnswer {AnswerId} as incomplete.", Id);
+            }
+        }
+
+        public async Task AddComment(UserModel user, int Id, string Comment)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return;
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                if (record == null || !await CheckPermission(user, record))
+                {
+                    _logger.LogWarning("Permission denied for user {UserId} on TaskRecord {RecordId}.", user.Id, record?.Id);
+                    return;
+                }
+
+                answer.ResultComment = Comment;
+                await _databaseContext.SaveChangesAsync();
+                _logger.LogInformation("Added comment to TaskAnswer {AnswerId} by user {UserId}.", Id, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while adding a comment to TaskAnswer {AnswerId}.", Id);
+            }
+        }
+        public async Task DeleteComment(UserModel user, int Id)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return;
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                if (record == null || !await CheckPermission(user, record))
+                {
+                    _logger.LogWarning("Permission denied for user {UserId} on TaskRecord {RecordId}.", user.Id, record?.Id);
+                    return;
+                }
+
+                answer.ResultComment = null;
+                await _databaseContext.SaveChangesAsync();
+                _logger.LogInformation("Deleted comment from TaskAnswer {AnswerId} by user {UserId}.", Id, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while deleting a comment from TaskAnswer {AnswerId}.", Id);
+            }
+        }
+        public async Task ChangeStateAdm(UserModel user, int Id, string State)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return;
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                if (record == null || !await CheckPermission(user, record))
+                {
+                    _logger.LogWarning("Permission denied for user {UserId} on TaskRecord {RecordId}.", user.Id, record?.Id);
+                    return;
+                }
+
+                answer.State = State;
+                await _databaseContext.SaveChangesAsync();
+                _logger.LogInformation("Changed state of TaskAnswer {AnswerId} by user {UserId}.", Id, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while changing the state of TaskAnswer {AnswerId}.", Id);
+            }
+        }
+        public async Task<UserTaskResultData> GetUserTaskResult(UserModel user, int Id)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return new UserTaskResultData();
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                UserModel taskuser = await _databaseContext.Users.FindAsync(answer.Id_User);
+
+                if (record == null || !await CheckPermission(user, record))
+                {
+                    _logger.LogWarning("Permission denied for user {UserId} on TaskRecord {RecordId}.", user.Id, record?.Id);
+                    return new UserTaskResultData();
+                }
+
+                _logger.LogInformation("Retrieved TaskResultData for TaskAnswer {AnswerId} by user {UserId}.", Id, user.Id);
+                return new UserTaskResultData(answer, record, taskuser);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving TaskResultData for TaskAnswer {AnswerId}.", Id);
+                return new UserTaskResultData();
+            }
+        }
+
+        public async Task<FileResult?> DownloadFileResult(UserModel user, int Id, string Firstname, string Lastname)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return null;
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                if (record == null)
+                {
+                    _logger.LogWarning("TaskRecord for TaskAnswer {AnswerId} not found.", Id);
+                    return null;
+                }
+
+                Group group = await _databaseContext.Group.FindAsync(record.Id_Group);
+                if (group == null || group.Id_User != user.Id)
+                {
+                    _logger.LogWarning("Group not found or user {UserId} does not have permission for TaskAnswer {AnswerId}.", user.Id, Id);
+                    return null;
+                }
+
+                if (answer.ResultFile == null || string.IsNullOrEmpty(answer.ResultFileExtension))
+                {
+                    _logger.LogInformation("No file attached to TaskAnswer {AnswerId}.", Id);
+                    return null;
+                }
+
+                byte[] fileData = answer.ResultFile;
+                string fileExtension = answer.ResultFileExtension;
+                string fileName = $"{Firstname} {Lastname} - AnswerFile{fileExtension}";
+
+                _logger.LogInformation("File for TaskAnswer {AnswerId} prepared for download by user {UserId}.", Id, user.Id);
+                return new FileContentResult(fileData, "application/octet-stream")
+                {
+                    FileDownloadName = fileName
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while downloading the file for TaskAnswer {AnswerId}.", Id);
+                throw;
+            }
+        }
+
+        public async Task<FileResult?> DownloadTextResult(UserModel user, int Id, string Firstname, string Lastname)
+        {
+            try
+            {
+                TaskAnswer answer = await _databaseContext.TaskAnswer.FindAsync(Id);
+                if (answer == null)
+                {
+                    _logger.LogWarning("TaskAnswer with ID {AnswerId} not found.", Id);
+                    return null;
+                }
+
+                TaskRecord record = await _databaseContext.TaskRecord.FindAsync(answer.Id_Task);
+                if (record == null)
+                {
+                    _logger.LogWarning("TaskRecord for TaskAnswer {AnswerId} not found.", Id);
+                    return null;
+                }
+
+                Group group = await _databaseContext.Group.FindAsync(record.Id_Group);
+                if (group == null || group.Id_User != user.Id)
+                {
+                    _logger.LogWarning("Group not found or user {UserId} does not have permission for TaskAnswer {AnswerId}.", user.Id, Id);
+                    return null;
+                }
+
+                if (string.IsNullOrEmpty(answer.ResultString))
+                {
+                    _logger.LogInformation("No text result attached to TaskAnswer {AnswerId}.", Id);
+                    return null;
+                }
+
+                byte[] fileData = System.Text.Encoding.UTF8.GetBytes(answer.ResultString);
+                string fileName = $"{Firstname} {Lastname} - AnswerFile.txt";
+
+                _logger.LogInformation("Text result for TaskAnswer {AnswerId} prepared for download by user {UserId}.", Id, user.Id);
+                return new FileContentResult(fileData, "text/plain")
+                {
+                    FileDownloadName = fileName
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while downloading the text result for TaskAnswer {AnswerId}.", Id);
+                throw;
+            }
+        }
 
 
     }

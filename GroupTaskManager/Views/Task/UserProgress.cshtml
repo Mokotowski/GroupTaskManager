@@ -1,0 +1,181 @@
+﻿@model GroupTaskManager.GroupTaskManager.Models.UserTaskResultData
+
+@{
+    ViewData["Title"] = "Work on Task";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/workontask.css" />
+}
+
+<div class="main">
+    <div class="taskwork">
+
+        <h2 class="task-title">Task: @Model.Name</h2>
+        <p class="task-description">@Model.Description</p>
+
+        <div class="task-details">
+            <div class="detail">
+                <span class="detail-label">Answer Type:</span>
+                <span class="detail-value">@((Model.AnswerType == "Both") ? "File and Text" : Model.AnswerType)</span>
+            </div>
+            <div class="detail">
+                <span class="detail-label">Added on:</span>
+                <span class="detail-value">@Model.AddTime.ToString("g")</span>
+            </div>
+            <div class="detail">
+                <span class="detail-label">End Time:</span>
+                <span class="detail-value" style="color: @(DateTime.Now > Model.EndTime ? "red" : "green")">
+                    @Model.EndTime.ToString("g")
+                </span>
+            </div>
+            <div class="detail">
+                <span class="detail-label">Current State:</span>
+                <span class="detail-value">@Model.State</span>
+            </div>
+        </div>
+
+        <hr />
+
+        <h3>User Submission</h3>
+        @if (Model.AnswerType == "Both" || Model.AnswerType == "Text")
+        {
+            <p>
+                <strong>Text Answer:</strong>
+                @if (!string.IsNullOrEmpty(Model.ResultString))
+                {
+                    @Model.ResultString
+                    <a href="@Url.Action("DownloadTextResult", "Task", new { Id = Model.Id_TaskAnswer, Model.Firstname, Model.Lastname })" download="AnswerFile.txt">
+                        Download Text
+                    </a>
+                }
+                else
+                {
+                    <em>No text answer provided.</em>
+                }
+            </p>
+        }
+
+        @if (Model.AnswerType == "Both" || Model.AnswerType == "File")
+        {
+            <p>
+                <strong>File Answer:</strong>
+                @if (Model.ResultFile != null && !string.IsNullOrEmpty(Model.ResultFileExtension))
+                {
+                    <a href="@Url.Action("DownloadFileResult", "Task", new { Id = Model.Id_TaskAnswer, Model.Firstname, Model.Lastname })"
+                       download="AnswerFile@Model.ResultFileExtension">
+                        Download File
+                    </a>
+                }
+                else
+                {
+                    <em>No file answer provided.</em>
+                }
+            </p>
+        }
+
+        <hr />
+
+        @if (Model.Completed)
+        {
+            <form asp-action="InCompleted" method="post" class="mt-3">
+                <input type="hidden" name="Id" value="@Model.Id_TaskAnswer" />
+                <input type="hidden" name="State" value="Rejected" />
+                <button type="submit" class="btn btn-warning">Mark as Rejected</button>
+            </form>
+            <form asp-action="InCompleted" method="post" class="mt-3">
+                <input type="hidden" name="Id" value="@Model.Id_TaskAnswer" />
+                <input type="hidden" name="State" value="Pending" />
+                <button type="submit" class="btn btn-warning">Mark as Pending</button>
+            </form>
+        }
+        else
+        {
+            <form asp-action="ChangeStateAdm" method="post">
+                <input type="hidden" name="Id" value="@Model.Id_TaskAnswer" />
+                <select name="State" class="form-select">
+                    @if (Model.State == "To Do")
+                    {
+                        <option value="To Do" selected>To Do</option>
+                    }
+                    else
+                    {
+                        <option value="To Do">To Do</option>
+                    }
+
+                    @if (Model.State == "In Progress")
+                    {
+                        <option value="In Progress" selected>In Progress</option>
+                    }
+                    else
+                    {
+                        <option value="In Progress">In Progress</option>
+                    }
+
+                    @if (Model.State == "Testing")
+                    {
+                        <option value="Testing" selected>Testing</option>
+                    }
+                    else
+                    {
+                        <option value="Testing">Testing</option>
+                    }
+
+                    @if (Model.State == "Approved")
+                    {
+                        <option value="Approved" selected>Approved</option>
+                    }
+                    else
+                    {
+                        <option value="Approved">Approved</option>
+                    }
+
+                    @if (Model.State == "Pending")
+                    {
+                        <option value="Pending" selected>Pending</option>
+                    }
+                    else
+                    {
+                        <option value="Pending">Pending</option>
+                    }
+
+                    @if (Model.State == "Rejected")
+                    {
+                        <option value="Rejected" selected>Rejected</option>
+                    }
+                    else
+                    {
+                        <option value="Rejected">Rejected</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-primary">Change State</button>
+            </form>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.ResultComment))
+        {
+            <div class="task-comment">
+                <p>@Model.ResultComment</p>
+                <form asp-action="DeleteComment" method="post" class="mt-2">
+                    <input type="hidden" name="Id" value="@Model.Id_TaskAnswer" />
+                    <button type="submit" class="btn btn-danger">Delete Comment</button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <form asp-action="AddComment" method="post" class="mt-3">
+                <input type="hidden" name="Id" value="@Model.Id_TaskAnswer" />
+                <div class="form-group">
+                    <label for="Comment">Add Comment</label>
+                    <textarea name="Comment" class="form-control" rows="3" maxlength="500" placeholder="Add a comment"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Add Comment</button>
+            </form>
+        }
+
+        <hr />
+
+
+    </div>
+</div>

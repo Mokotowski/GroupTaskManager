@@ -43,6 +43,16 @@
             </div>
         </div>
 
+        @if (Model.answer.ResultComment != null)
+        {
+            <div class="task-comment">
+                <p>
+                    @Model.answer.ResultComment
+                </p>
+            </div>
+        }
+
+
         <hr />
 
         @if (Model.record.AnswerType == "Both" || Model.record.AnswerType == "Text")
@@ -73,6 +83,7 @@
 
                         <form asp-action="DeleteFile" method="post">
                             <input type="hidden" name="Id" value="@Model.answer.Id" />
+                            <input type="hidden" name="Id_Record" value="@ViewBag.Id_Record" />
 
                             <button type="submit" class="btn btn-success">Delete File</button>
                         </form>
@@ -94,7 +105,9 @@
     {
         <h3>Change Task State</h3>
         <form asp-action="ChangeState" method="post">
-            <input type="hidden" name="Id" value="@Model.record.Id" />
+            <input type="hidden" name="Id" value="@Model.answer.Id" />
+            <input type="hidden" name="Id_Record" value="@ViewBag.Id_Record" />
+
             <select name="State" class="form-select">
                 @if (Model.answer.State == "To Do")
                 {
@@ -140,7 +153,8 @@
 
         <h3>Add Answer</h3>
         <form asp-action="AddAnswer" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="Id" value="@Model.record.Id" />
+            <input type="hidden" name="Id" value="@Model.answer.Id" />
+            <input type="hidden" name="Id_Record" value="@ViewBag.Id_Record" />
 
             @if (Model.record.AnswerType == "Both" || Model.record.AnswerType == "Text")
             {
@@ -165,7 +179,9 @@
         <hr />
 
         <form asp-action="Complete" method="post">
-            <input type="hidden" name="Id" value="@Model.record.Id" />
+            <input type="hidden" name="Id" value="@Model.answer.Id" />
+            <input type="hidden" name="Id_Record" value="@ViewBag.Id_Record" />
+
             <button type="submit" class="btn btn-warning">Mark as Complete</button>
         </form>
     }

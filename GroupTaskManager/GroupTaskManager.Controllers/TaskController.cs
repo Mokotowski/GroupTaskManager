@@ -15,12 +15,15 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
         private readonly UserManager<UserModel> _userManager;
         private readonly ITaskManageServices _taskManage;
         private readonly ITaskActionsServices _taskActions;
+        private readonly ITaskUserResult _taskResult;
+
         private readonly DatabaseContext _databaseContext;
-        public TaskController(UserManager<UserModel> userManager, ITaskManageServices taskManage, ITaskActionsServices taskActions)
+        public TaskController(UserManager<UserModel> userManager, ITaskManageServices taskManage, ITaskActionsServices taskActions, ITaskUserResult taskResult)
         {
             _userManager = userManager;
             _taskManage = taskManage;
             _taskActions = taskActions;
+            _taskResult = taskResult;
         }
 
 
@@ -104,6 +107,8 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
             UserModel user = await _userManager.GetUserAsync(User);
             TaskWorkModel task = await _taskActions.WorkTask(user, Id);
 
+            ViewBag.Id_Record = Id;
+
             return View(task);
         }
 
@@ -168,16 +173,16 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> ChangeState(int Id, string State)
+        public async Task<IActionResult> ChangeState(int Id, string State, int Id_Record)
         {
             UserModel user = await _userManager.GetUserAsync(User);
 
             await _taskActions.ChangeState(user, Id, State);
 
-            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+            return RedirectToAction("WorkTask", "Task", new { Id = Id_Record });
         }
         [HttpPost]
-        public async Task<IActionResult> AddAnswer(int Id, string? answer, IFormFile? file)
+        public async Task<IActionResult> AddAnswer(int Id, string? answer, IFormFile? file, int Id_Record)
         {
             UserModel user = await _userManager.GetUserAsync(User);
 
@@ -197,7 +202,7 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
 
             await _taskActions.AddAnswer(user, Id, answer, fileanswer, extensionfile);
 
-            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+            return RedirectToAction("WorkTask", "Task", new { Id = Id_Record });
         }
 
         [HttpGet]
@@ -216,27 +221,113 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteFile(int Id)
+        public async Task<IActionResult> DeleteFile(int Id, int Id_Record)
         {
             UserModel user = await _userManager.GetUserAsync(User);
 
             await _taskActions.DeleteAnswerFile(user, Id);
 
-            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+            return RedirectToAction("WorkTask", "Task", new { Id = Id_Record });
         }
 
 
 
         [HttpPost]
-        public async Task<IActionResult> Complete(int Id)
+        public async Task<IActionResult> Complete(int Id, int Id_Record)
         {
             UserModel user = await _userManager.GetUserAsync(User);
 
             await _taskActions.Complete(user, Id);
 
-            return RedirectToAction("WorkTask", "Task", new { Id = Id });
+            return RedirectToAction("WorkTask", "Task", new { Id = Id_Record });
         }
 
+
+
+
+
+
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> UserProgress(int Id_TaskAnswer)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            UserTaskResultData data = await _taskResult.GetUserTaskResult(user, Id_TaskAnswer);
+
+            return View(data);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> InCompleted(int Id, string State)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+            await _taskResult.InCompleted(user, Id, State);
+
+            return RedirectToAction("UserProgress", "Task", new { Id_TaskAnswer = Id });
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int Id, string Comment)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+            await _taskResult.AddComment(user, Id, Comment);
+
+            return RedirectToAction("UserProgress", "Task", new { Id_TaskAnswer = Id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int Id)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+            await _taskResult.DeleteComment(user, Id);
+
+            return RedirectToAction("UserProgress", "Task", new { Id_TaskAnswer = Id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeStateAdm(int Id, string State)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+            await _taskResult.ChangeStateAdm(user, Id, State);
+
+            return RedirectToAction("UserProgress", "Task", new { Id_TaskAnswer = Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadFileResult(int Id, string Firstname, string Lastname)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            var fileResult = await _taskResult.DownloadFileResult(user, Id, Firstname, Lastname);
+
+            if (fileResult == null)
+            {
+                return NotFound("File not found or you do not have permission to download it.");
+            }
+
+            return fileResult;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DownloadTextResult(int Id, string Firstname, string Lastname)
+        {
+            UserModel user = await _userManager.GetUserAsync(User);
+
+            var fileResult = await _taskResult.DownloadTextResult(user, Id, Firstname, Lastname);
+
+            if (fileResult == null)
+            {
+                return NotFound("File not found or you do not have permission to download it.");
+            }
+
+            return fileResult;
+        }
 
     }
 }

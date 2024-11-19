@@ -54,6 +54,7 @@ builder.Services.AddScoped<IGroupCheck, GroupServices>();
 
 builder.Services.AddScoped<ITaskManageServices, TaskServices>();
 builder.Services.AddScoped<ITaskActionsServices, TaskServices>();
+builder.Services.AddScoped<ITaskUserResult, TaskServices>();
 
 
 builder.Services.AddHttpContextAccessor();

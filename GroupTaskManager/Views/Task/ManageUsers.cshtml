@@ -31,7 +31,6 @@
         </div>
     </div>
 
-
     <div class="users-section">
 
         <div class="users-column" id="list-users-task">
@@ -40,12 +39,20 @@
             {
                 @if (user.AddToTask)
                 {
-                    <form class="user-form" method="post" asp-action="DeleteTaskUser" asp-controller="Task">
-                        <strong>@user.Firstname @user.Lastname</strong>
-                        <input type="hidden" name="Id_Task" value="@ViewBag.Id_Task" />
-                        <input type="hidden" name="Id_user" value="@user.Id_User" />
-                        <button type="submit" class="btn btn-danger">Remove User</button>
-                    </form>
+                    <div class="user-row">
+                        <form method="get" asp-action="UserProgress" asp-controller="Task">
+                            <input type="hidden" name="Id_TaskAnswer" value="@user.Id" />
+                            <button type="submit" class="btn btn-primary">See Progress</button>
+                        </form>
+
+                        <strong class="user-name">@user.Firstname @user.Lastname - @user.State</strong>
+
+                        <form method="post" asp-action="DeleteTaskUser" asp-controller="Task">
+                            <input type="hidden" name="Id_Task" value="@ViewBag.Id_Task" />
+                            <input type="hidden" name="Id_user" value="@user.Id_User" />
+                            <button type="submit" class="btn btn-danger">Remove User</button>
+                        </form>
+                    </div>
                 }
             }
         </div>
@@ -56,12 +63,15 @@
             {
                 @if (!user.AddToTask)
                 {
-                    <form class="user-form" method="post" asp-action="AddTaskUser" asp-controller="Task">
-                        <strong>@user.Firstname @user.Lastname</strong>
-                        <input type="hidden" name="Id_Task" value="@ViewBag.Id_Task" />
-                        <input type="hidden" name="Id_user" value="@user.Id_User" />
-                        <button type="submit" class="btn btn-primary">Add User</button>
-                    </form>
+                    <div class="user-row">
+                        <strong class="user-name">@user.Firstname @user.Lastname</strong>
+
+                        <form method="post" asp-action="AddTaskUser" asp-controller="Task">
+                            <input type="hidden" name="Id_Task" value="@ViewBag.Id_Task" />
+                            <input type="hidden" name="Id_user" value="@user.Id_User" />
+                            <button type="submit" class="btn btn-primary">Add User</button>
+                        </form>
+                    </div>
                 }
             }
         </div>
