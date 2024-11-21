@@ -1,11 +1,13 @@
 ﻿using GroupTaskManager.GroupTaskManager.Database;
 using GroupTaskManager.GroupTaskManager.Models;
 using GroupTaskManager.GroupTaskManager.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GroupTaskManager.GroupTaskManager.Controllers
 {
+    [Authorize]
     public class GroupController : Controller
     {
         private readonly IGroupManage _groupManage;

@@ -10,7 +10,8 @@
 }
 
 <div class="main">
-    <div class="taskwork">
+    <div class="content">
+        <div class="taskwork">
 
         <h2 class="task-title">Task: @Model.record.Name</h2>
         <p class="task-description">@Model.record.Description</p>
@@ -98,11 +99,12 @@
             }
 
         }
-        <hr />
 
 
     @if (Model.answer.State != "Completed")
     {
+         <hr />
+
         <h3>Change Task State</h3>
         <form asp-action="ChangeState" method="post">
             <input type="hidden" name="Id" value="@Model.answer.Id" />
@@ -186,5 +188,6 @@
         </form>
     }
 
+    </div>
     </div>
 </div>

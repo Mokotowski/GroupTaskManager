@@ -2,6 +2,7 @@
 using GroupTaskManager.GroupTaskManager.Services.Interface;
 using GroupTaskManager.Models;
 using GroupTaskManager.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -68,7 +69,9 @@ namespace GroupTaskManager.Controllers
             }
         }
 
+
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             if(await _loginlogout.Logout())

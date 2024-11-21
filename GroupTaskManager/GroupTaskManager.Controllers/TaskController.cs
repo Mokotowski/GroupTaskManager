@@ -2,6 +2,7 @@
 using GroupTaskManager.GroupTaskManager.Models;
 using GroupTaskManager.GroupTaskManager.Services;
 using GroupTaskManager.GroupTaskManager.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace GroupTaskManager.GroupTaskManager.Controllers
 {
+    [Authorize]
     public class TaskController : Controller
     {
         private readonly UserManager<UserModel> _userManager;
@@ -17,7 +19,6 @@ namespace GroupTaskManager.GroupTaskManager.Controllers
         private readonly ITaskActionsServices _taskActions;
         private readonly ITaskUserResult _taskResult;
 
-        private readonly DatabaseContext _databaseContext;
         public TaskController(UserManager<UserModel> userManager, ITaskManageServices taskManage, ITaskActionsServices taskActions, ITaskUserResult taskResult)
         {
             _userManager = userManager;
